@@ -4,8 +4,11 @@ IMG="ctf_ch3_bashrc"
 cname="c3_run_$$"
 docker run -d --rm --name "$cname" "$IMG" >/dev/null
 
+# Trigger interactive shell so .bashrc runs
 docker exec -u ctfuser "$cname" bash -ic 'true' >/dev/null 2>&1 || true
 
+# Brief retry loop
+out=""
 for i in {1..10}; do
   out="$(docker exec -u ctfuser "$cname" bash -lc 'cat /tmp/.cachefile' 2>/dev/null || true)"
   [ -n "$out" ] && break
