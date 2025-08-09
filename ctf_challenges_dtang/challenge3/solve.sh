@@ -4,7 +4,7 @@ IMG="ctf_ch3_bashrc"
 cname="c3_run_$$"
 docker run -d --rm --name "$cname" "$IMG" >/dev/null
 
-docker exec -u ctfuser "$cname" bash -l -c 'true' >/dev/null 2>&1 || true
+docker exec -u ctfuser "$cname" bash -ic 'true' >/dev/null 2>&1 || true
 
 for i in {1..10}; do
   out="$(docker exec -u ctfuser "$cname" bash -lc 'cat /tmp/.cachefile' 2>/dev/null || true)"
