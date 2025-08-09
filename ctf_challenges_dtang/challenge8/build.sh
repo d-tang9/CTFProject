@@ -1,4 +1,4 @@
-    #!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 IMG="ctf_ch8_rev_go"
 CTX="$(cd "$(dirname "$0")" && pwd)"/build_ctx
@@ -8,8 +8,11 @@ cat >"$CTX/Dockerfile" <<'EOF'
 # build stage
 FROM golang:1.22 as builder
 WORKDIR /src
-RUN printf '%s\n' 'package main' 'import ("bufio";"fmt";"os")' \
-    'func main(){' 'in:=bufio.NewScanner(os.Stdin); in.Scan();' \
+RUN printf '%s\n' \
+    'package main' \
+    'import ("bufio";"fmt";"os")' \
+    'func main(){' \
+    'in:=bufio.NewScanner(os.Stdin); in.Scan();' \
     'if in.Text()=="fbujm38@db" { fmt.Println("flag{re_strings_go}") } else { fmt.Println("nope") }' \
     '}' > checkpass.go
 RUN go build -ldflags="-s -w" -o /out/checkpass checkpass.go
@@ -24,3 +27,6 @@ RUN chown -R ctfuser:ctfuser /home/ctfuser && chmod 555 /home/ctfuser/checkpass
 USER ctfuser
 CMD ["bash"]
 EOF
+
+docker build -t "$IMG" "$CTX" >/dev/null
+echo "Built image: $IMG"
