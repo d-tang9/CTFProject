@@ -18,7 +18,7 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -s /bin/bash ctfuser
 COPY flag.txt /root/flag.txt
-RUN chmod 600 /root/flag.txt
+RUN chmod 644 /root/flag.txt
 COPY app/.bashrc /home/ctfuser/.bashrc
 RUN chown -R ctfuser:ctfuser /home/ctfuser
 USER ctfuser
