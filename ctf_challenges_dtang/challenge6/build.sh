@@ -11,7 +11,8 @@ name_hex="$(echo -n 'note_flag.txt' | xxd -p -u)"
 mv "$CTX/app/random.bin" "$CTX/app/$name_hex"
 
 cat >"$CTX/Dockerfile" <<'EOF'
-\1RUN apk add --no-cache binutils
+FROM alpine:3.20
+RUN apk add --no-cache binutils
 RUN adduser -D -s /bin/sh ctfuser
 WORKDIR /home/ctfuser
 COPY app/ ./
