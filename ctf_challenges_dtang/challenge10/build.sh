@@ -35,26 +35,23 @@ NOTE
 
 # Vulnerable C program (calls 'logger' with no full path)
 cat > app/vuln.c <<'C'
-#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <limits.h>
 
 int main(void) {
-    // Ensure we truly run as root (both real and effective)
+    // make sure we’re really root (euid already root due to SUID)
     if (setgid(0) != 0 || setuid(0) != 0) {
         perror("setuid/setgid");
         return 1;
     }
 
-    // Use a shell that preserves privileges (-p) and do not hardcode full path to logger
-    // BusyBox sh supports -p; this avoids dropping euid.
-    int rc = execl("/bin/sh", "sh", "-pc",
-                   "logger -t vuln 'user ran vuln'", (char *)NULL);
+    // Call 'logger' directly; PATH will be searched (vulnerable!)
+    char *argv[] = {"logger", "-t", "vuln", "user ran vuln", NULL};
+    execvp("logger", argv);
 
-    // If execl returns, it's an error
-    perror("execl");
-    return rc == -1 ? 127 : rc;
+    // If we get here, exec failed
+    perror("execvp");
+    return 127;
 }
 C
 
