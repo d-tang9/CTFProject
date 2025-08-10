@@ -43,7 +43,8 @@ COPY data /opt/data
 COPY README.txt /home/ctfuser/README.txt
 RUN chmod 444 /opt/data/* && chown -R ctfuser:ctfuser /opt /home/ctfuser
 USER ctfuser
-CMD ["bash"]
+# CMD ["bash"]
+CMD ["sleep","infinity"]
 EOF
 
 docker build -t "$IMAGE" "$CTX" >/dev/null
