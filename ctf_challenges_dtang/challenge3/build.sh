@@ -3,30 +3,42 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE_NAME="challenge3_bashrc_backdoor:latest"
 
-mkdir -p "$HERE/app"
+mkdir -p "$HERE/app" "$HERE/app/sudoers.d"
 
 # Flag
 cat > "$HERE/flag.txt" <<'FLAG'
 FLAG{bashrc_backdoor_leaked_flag}
 FLAG
 
-# Entry point runs ONCE as root to leak the flag, then drops to ctfuser
-cat > "$HERE/entrypoint.sh" <<'ENTRY'
+# Root-only helper that performs the leak once
+cat > "$HERE/app/leak_once.sh" <<'LEAK'
 #!/usr/bin/env bash
 set -euo pipefail
-
-# 1) Leak as root (has read access to /root/flag.txt)
+# copy flag where everyone can read it
 ( umask 022; cp /root/flag.txt /tmp/.cachefile; chmod 0644 /tmp/.cachefile )
+LEAK
+chmod +x "$HERE/app/leak_once.sh"
 
-# 2) Drop to ctfuser and keep a login shell alive (so /etc/profile etc. still run)
-exec su -s /bin/bash -l ctfuser -c 'bash -lc "sleep infinity"'
-ENTRY
-chmod +x "$HERE/entrypoint.sh"
+# Restrictive sudoers rule: allow ONLY leak_once.sh without a password
+cat > "$HERE/app/sudoers.d/ctfuser" <<'SUDO'
+ctfuser ALL=(root) NOPASSWD: /usr/local/bin/leak_once.sh
+SUDO
 
-# Optional .bashrc (teaching marker)
+# Optional .bashrc marker
 cat > "$HERE/app/.bashrc" <<'BRC'
 alias ll='ls -alF'
 BRC
+
+# Entrypoint runs as ctfuser (default user) and invokes the single allowed sudo command
+cat > "$HERE/entrypoint.sh" <<'ENTRY'
+#!/usr/bin/env bash
+set -euo pipefail
+# Perform the leak as root via tightly-scoped sudo permission
+sudo /usr/local/bin/leak_once.sh || true
+# Keep container alive in a login shell
+exec bash -lc "sleep infinity"
+ENTRY
+chmod +x "$HERE/entrypoint.sh"
 
 # Dockerfile
 cat > "$HERE/Dockerfile" <<'DOCKER'
@@ -40,17 +52,27 @@ COPY flag.txt /root/flag.txt
 RUN chmod 600 /root/flag.txt
 
 # Tools
-RUN apt-get update && apt-get install -y --no-install-recommends bash coreutils \
+RUN apt-get update && apt-get install -y --no-install-recommends bash coreutils sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Teaching marker
+# Install helper and sudoers rule
+COPY app/leak_once.sh /usr/local/bin/leak_once.sh
+RUN chown root:root /usr/local/bin/leak_once.sh && chmod 0755 /usr/local/bin/leak_once.sh
+COPY app/sudoers.d/ctfuser /etc/sudoers.d/ctfuser
+RUN chmod 0440 /etc/sudoers.d/ctfuser
+
+# Optional teaching marker
 COPY app/.bashrc /home/ctfuser/.bashrc
 RUN chown ctfuser:ctfuser /home/ctfuser/.bashrc
 
-# Disable root *login* (but entrypoint still runs as PID 1 with root privileges)
+# Disable root login
 RUN chsh -s /usr/sbin/nologin root && passwd -l root || true
 
-# Start as root so we can perform the one-time leak, then drop to ctfuser
+# Default to ctfuser so `docker exec` lands as ctfuser
+USER ctfuser
+WORKDIR /home/ctfuser
+
+# Start entrypoint (as ctfuser)
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 DOCKER
