@@ -19,10 +19,12 @@ import (
 )
 
 const flag = "flag{rev_binary_basic}"
-var hint = "PWD=fbujm38@db"
+// Delimited breadcrumb so `strings` shows a clean token:
+var hint = "PWD=[fbujm38@db]\n"
 
 func main() {
-	if len(hint) == 0 { fmt.Print("") } // keep hint in binary
+	// Reference the hint so it is retained in the binary.
+	if len(hint) == 0 { fmt.Print("") }
 
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter password: ")
@@ -51,15 +53,14 @@ RUN apk add --no-cache bash binutils
 RUN adduser -D -s /bin/bash ctfuser
 WORKDIR /home/ctfuser
 
-# Copy as root, set perms, then hand over to ctfuser
 COPY --from=builder /out/checkpass /home/ctfuser/checkpass
 RUN chmod 0555 /home/ctfuser/checkpass && chown ctfuser:ctfuser /home/ctfuser/checkpass
 
 USER ctfuser
 RUN printf '%s\n' \
   "Goal: get the flag from ./checkpass" \
-  "Tip: Try simple static inspection (e.g., strings) before running." \
-  "Breadcrumb: look for something that looks like a password." \
+  "Tip: Try static inspection (e.g., strings) first." \
+  "Breadcrumb format: PWD=[...]" \
   > README.txt
 
 CMD ["/bin/bash", "-l"]
@@ -75,4 +76,4 @@ docker run -dit --name "${CONTAINER_NAME}" "${IMAGE_NAME}" >/dev/null
 
 echo "Built and started ${CONTAINER_NAME}. To play:"
 echo "  docker exec -it ${CONTAINER_NAME} /bin/bash"
-# echo "Inside: ~/checkpass and ~/README.txt"
+echo "Inside: ~/checkpass and ~/README.txt"
