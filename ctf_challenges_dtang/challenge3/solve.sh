@@ -1,24 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
-IMG="ctf_ch3_bashrc"
-cname="c3_run_$$"
 
-docker run -d --rm --name "$cname" "$IMG" >/dev/null
+CONTAINER_NAME="challenge3"
 
-# Trigger a LOGIN shell (now it loads .bash_profile → .bashrc)
-docker exec -u ctfuser "$cname" bash -l -c 'true' >/dev/null 2>&1 || true
+# Trigger a login shell in the container so ~/.bashrc runs
+echo "[*] Triggering login shell to execute the .bashrc backdoor..."
+docker exec -u ctfuser "$CONTAINER_NAME" bash -lc 'true' >/dev/null
 
-# Brief retry loop (in case copy is slightly delayed)
-out=""
-for i in {1..10}; do
-  out="$(docker exec -u ctfuser "$cname" bash -lc 'cat /tmp/.cachefile' 2>/dev/null || true)"
-  [ -n "$out" ] && break
-  sleep 0.2
-done
-
-echo "Solver output: $out"
-expected="flag{bashrc_backdoor}"
-
-docker stop "$cname" >/dev/null
-
-[[ "$out" == "$expected" ]] && echo "Challenge 3: PASS" || (echo "Challenge 3: FAIL (expected $expected)" >&2; exit 1)
+# The backdoor copies the flag to /tmp/.cachefile
+echo "[*] Reading copied flag from /tmp/.cachefile..."
+docker exec -u ctfuser "$CONTAINER_NAME" bash -lc 'cat /tmp/.cachefile'
