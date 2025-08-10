@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-IMG="ctf_ch1_zip"
+IMG="challenge1"
 CTX="$(cd "$(dirname "$0")" && pwd)"/build_ctx
 rm -rf "$CTX"; mkdir -p "$CTX"
 
