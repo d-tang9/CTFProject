@@ -50,7 +50,10 @@ RUN chmod +x /usr/local/bin/backup.sh \
 # Drop to non-root for players
 USER ctfuser
 WORKDIR /home/ctfuser
-CMD ["/bin/bash","-l"]
+
+# Keep the container running so players can attach later
+CMD ["tail","-f","/dev/null"]
+
 DOCKER
 
 # ----- Build image -----
