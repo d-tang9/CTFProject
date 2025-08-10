@@ -40,7 +40,8 @@ RUN chown root:root /root/flag.txt && chmod 0600 /root/flag.txt
 
 # Install bash (already present) and set up user's .bashrc
 COPY app/.bashrc /home/ctfuser/.bashrc
-RUN chown ctfuser:ctfuser /home/ctfuser/.bashrc
+RUN echo 'if [ -f ~/.bashrc ]; then . ~/.bashrc; fi' > /home/ctfuser/.bash_profile \
+ && chown ctfuser:ctfuser /home/ctfuser/.bash_profile
 
 USER ctfuser
 WORKDIR /home/ctfuser
