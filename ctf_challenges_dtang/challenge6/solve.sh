@@ -4,14 +4,12 @@ set -euo pipefail
 CONTAINER_NAME="challenge6"
 EXPECTED_FLAG="flag{hidden_in_plain_sight}"
 
-# Search for a flag-like string via strings
+# Search all regular files in /home/ctfuser (including dotfiles) for the first flag-looking string
 FOUND_FLAG="$(
   docker exec -i "$CONTAINER_NAME" bash -lc '
     cd /home/ctfuser || exit 1
-    for f in * .* 2>/dev/null; do
-      [ -f "$f" ] || continue
-      strings "$f" 2>/dev/null | grep -E "flag\{[[:print:]]+\}" || true
-    done | head -n1
+    # strings on dotfiles and normal files; silence errors for non-regular matches
+    strings .[!.]* * 2>/dev/null | grep -m1 -E "flag\{[[:print:]]+\}"
   ' | tr -d "\r"
 )"
 
