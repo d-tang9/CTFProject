@@ -1,11 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Proof-of-concept solve: shows the leaked flag produced by the backdoored .bashrc
 set -euo pipefail
-cd "$(dirname "$0")"
 
-container=challenge3
+IMAGE_NAME="challenge3_bashrc_backdoor:latest"
 
-echo "[*] Triggering login shell to execute the .bashrc backdoor..."
-docker exec -u ctfuser "$container" bash -lc 'true'
-
-echo "[*] Reading copied flag from /tmp/.cachefile..."
-docker exec -u ctfuser "$container" bash -lc 'cat /tmp/.cachefile'
+# Start a container; interactive bash triggers .bashrc, which copies the flag
+# Then print the leaked flag from /tmp/.cachefile
+echo "[*] Launching container and reading leaked flag..."
+docker run --rm "$IMAGE_NAME" bash -ic 'sleep 0.2; echo -n "Flag: "; cat /tmp/.cachefile'
