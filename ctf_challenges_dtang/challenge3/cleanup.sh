@@ -1,10 +1,17 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# Remove all files created by build.sh and the Docker artifacts.
+set -euo pipefail
 
-IMAGE="challenge3"
-CONTAINER="challenge3"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IMAGE_NAME="challenge3_bashrc_backdoor:latest"
 
-echo "[*] Removing container and image..."
-docker rm -f $CONTAINER >/dev/null 2>&1 || true
-docker rmi $IMAGE >/dev/null 2>&1 || true
-echo "[+] Cleaned Challenge 3."
+echo "[*] Removing staged files..."
+rm -f "$HERE/Dockerfile"
+rm -f "$HERE/flag.txt"
+rm -f "$HERE/app/.bashrc"
+rmdir "$HERE/app" 2>/dev/null || true
+
+echo "[*] Removing Docker image (if present)..."
+docker image rm -f "$IMAGE_NAME" >/dev/null 2>&1 || true
+
+echo "[+] Cleanup complete."
