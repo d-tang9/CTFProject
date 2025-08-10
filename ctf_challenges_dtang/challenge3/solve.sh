@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-IMAGE_NAME="challenge3_bashrc_backdoor:latest"
-NAME="challenge3_run_$RANDOM"
+IMAGE_NAME="dtang9/challenge3-bashrc-backdoor:latest"
+NAME="challenge3-bashrc-backdoor"
 
 echo "[*] Starting container (defaults to ctfuser)..."
 docker run -d --rm --name "$NAME" "$IMAGE_NAME" >/dev/null
