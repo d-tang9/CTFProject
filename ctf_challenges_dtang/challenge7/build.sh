@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CHAL_NAME="challenge7"
-IMG_TAG="ctf-${CHAL_NAME}"
+IMG_TAG="${CHAL_NAME}"
 
 rm -rf "${CHAL_NAME}"
 mkdir -p "${CHAL_NAME}/app"
