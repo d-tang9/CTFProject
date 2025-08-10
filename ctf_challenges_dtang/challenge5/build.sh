@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Challenge 5: Misconfigured Sudoers (less NOPASSWD)
 # Image/tag and container names
-IMAGE="ctf-challenge5:latest"
+IMAGE="challenge5:latest"
 CONTAINER="challenge5"
 
 # Clean any dangling previous container (best-effort)
