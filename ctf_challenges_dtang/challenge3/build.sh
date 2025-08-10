@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_NAME="challenge3_bashrc_backdoor:latest"
+IMAGE_NAME="challenge3:latest"
 
 mkdir -p "$HERE/app" "$HERE/app/sudoers.d"
 
