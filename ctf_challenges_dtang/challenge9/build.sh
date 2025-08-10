@@ -4,6 +4,11 @@ set -euo pipefail
 IMAGE="challenge9:latest"
 CONTAINER="challenge9"
 
+have_image() { docker image inspect "$IMAGE" >/dev/null 2>&1; }
+have_container() { docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER}$"; }
+
+# -------- Stage build context (same as before) --------
+
 # Fresh workspace
 rm -rf app
 mkdir -p app
@@ -64,17 +69,35 @@ RUN chown -R ctfuser:ctfuser /home/ctfuser
 # Runs every minute, logs to /var/log/cleanup.log
 RUN echo '* * * * * /bin/bash /usr/local/bin/cleanup.sh >> /var/log/cleanup.log 2>&1' > /etc/crontabs/root
 
-# Keep cron running and drop user into a login shell
-# - start crond in background (-l 2 for info logging)
-# - then switch to ctfuser for interactive play
-# CMD ["/bin/bash","-lc","/usr/sbin/crond -l 8 -c /etc/crontabs & echo '[i] cron started (etc/crontabs)'; exec su -l ctfuser"]
+# Keep cron running (use the correct spool dir) and keep the container alive
 CMD ["/bin/bash","-lc","/usr/sbin/crond -l 8 -c /etc/crontabs; tail -f /dev/null"]
 DOCKER
 
-# Build and run
-docker build -t "$IMAGE" app
-# Remove any old container
-docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
+# -------- Build (idempotent) --------
 
-# Run interactive so players can poke around
-docker run --name "$CONTAINER" -it "$IMAGE"
+if ! have_image || [[ "${1:-}" == "--rebuild" ]]; then
+  echo "[i] Building $IMAGE from ./app ..."
+  docker build -t "$IMAGE" app
+else
+  echo "[i] Image $IMAGE already exists. Skipping build. Use --rebuild to force."
+fi
+
+# -------- Run detached (idempotent) --------
+
+if have_container; then
+  echo "[i] Removing existing container..."
+  docker rm -f "$CONTAINER" >/dev/null
+fi
+
+echo "[i] Starting container detached..."
+docker run -d --name "$CONTAINER" "$IMAGE" \
+  /bin/bash -lc "/usr/sbin/crond -l 8 -c /etc/crontabs; tail -f /dev/null"
+
+echo "[i] Container status:"
+docker ps --filter "name=$CONTAINER"
+
+echo
+echo "[i] Ready."
+echo "    - Validate:      ./solve.sh"
+echo "    - Manual play:   docker exec -it $CONTAINER bash"
+echo "    - View logs:     docker logs -f $CONTAINER"
