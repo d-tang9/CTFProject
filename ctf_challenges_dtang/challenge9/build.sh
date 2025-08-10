@@ -67,7 +67,8 @@ RUN echo '* * * * * /bin/bash /usr/local/bin/cleanup.sh >> /var/log/cleanup.log 
 # Keep cron running and drop user into a login shell
 # - start crond in background (-l 2 for info logging)
 # - then switch to ctfuser for interactive play
-CMD ["/bin/bash","-lc","/usr/sbin/crond -l 8 -c /etc/crontabs & echo '[i] cron started (etc/crontabs)'; exec su -l ctfuser"]
+# CMD ["/bin/bash","-lc","/usr/sbin/crond -l 8 -c /etc/crontabs & echo '[i] cron started (etc/crontabs)'; exec su -l ctfuser"]
+CMD ["/bin/bash","-lc","/usr/sbin/crond -l 8 -c /etc/crontabs; tail -f /dev/null"]
 DOCKER
 
 # Build and run
