@@ -2,7 +2,7 @@
 set -euo pipefail
 
 IMAGE="dtang9/challenge1-brute-force-zip:latest"
-# Derive a sane container name from the repo (e.g., challenge1-brute-force-zip)
+# e.g. IMAGE=repo/name:tag  -> NAME=name
 NAME="${NAME:-$(basename "${IMAGE%%:*}")}"
 
 # ---------- helpers ----------
