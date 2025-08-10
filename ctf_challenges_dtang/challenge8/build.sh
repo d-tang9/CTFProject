@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CHALLENGE_NAME="challenge8"
-IMAGE_NAME="ctf-${CHALLENGE_NAME}:latest"
+IMAGE_NAME="${CHALLENGE_NAME}:latest"
 CONTAINER_NAME="${CHALLENGE_NAME}"
 
 rm -rf app
