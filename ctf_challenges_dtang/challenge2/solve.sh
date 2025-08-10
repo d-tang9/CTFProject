@@ -54,20 +54,23 @@ out_and_debug="$(exec_in "
   echo '[debug] ls sample:' >&2
   ls -la | head -n 10 >&2
 
-  # Find any file in home and scan for {fragmentN:X}
-  matches=\$(grep -Rho -E '\\{fragment[0-9]+:[^}]+' . 2>/dev/null | wc -l || true)
+  # Show how many fragment-like lines exist
+  matches=\$(grep -Rho -E '[{]fragment[0-9]+:[^}]+' . 2>/dev/null | wc -l || true)
   echo '[debug] matches found:' \${matches} >&2
-  if [ \"\${matches}\" -eq 0 ]; then
-    echo '[debug] showing first lines of *.txt (if any):' >&2
-    head -n 2 -- *.txt 2>/dev/null >&2 || true
-  fi
 
-  # Assemble the flag purely with awk (BusyBox/GNU friendly)
-  grep -Rho -E '\\{fragment[0-9]+:[^}]+' . 2>/dev/null |
-    awk '{ if (match(\$0, /\\{fragment([0-9]+):([^}]+)\\}/, m)) print m[1], m[2] }' |
+  # Parse WITHOUT regex captures:
+  # 1) grep fragment lines
+  # 2) split on any of { } : using -F'[{}:]'
+  #    fields: $2='fragmentN', $3='X'
+  # 3) strip 'fragment' prefix to get N
+  # 4) print 'N X', sort numerically, then join X chars
+  grep -Rho -E '[{]fragment[0-9]+:[^}]+' . 2>/dev/null |
+    awk -F'[{}:]' '{
+      n=\$2; sub(/^fragment/, \"\", n);
+      print n, \$3
+    }' |
     sort -n |
-    awk '{print \$2}' |
-    tr -d '\\n'
+    awk '{printf \"%s\", \$2}'
 ")"
 
 # Separate debug (stderr) from actual output (last line printed to stdout)
