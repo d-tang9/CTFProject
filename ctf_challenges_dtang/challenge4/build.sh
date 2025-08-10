@@ -13,19 +13,18 @@ mkdir -p "$APP_DIR"
 
 # ----- Challenge payloads -----
 
-# 1) Root-only flag (you can change this value)
+# 1) Root-only flag (change the value if you like)
 cat > "$BUILD_DIR/flag.txt" <<'FLAG'
 flag{broken_backup_permissions}
 FLAG
 
-# 2) Vulnerable root backup script
+# 2) Vulnerable root backup script (forces world-readable permissions)
 cat > "$APP_DIR/backup.sh" <<'BASH'
 #!/usr/bin/env bash
 set -euo pipefail
-# Intentionally unsafe: forces newly created files to be world-readable.
 mkdir -p /var/backups
-umask 000
-cp /root/flag.txt /var/backups/flag_backup.txt
+# Intentionally create a world-readable copy of the root flag
+install -m 0644 /root/flag.txt /var/backups/flag_backup.txt
 BASH
 chmod +x "$APP_DIR/backup.sh"
 
@@ -33,22 +32,19 @@ chmod +x "$APP_DIR/backup.sh"
 cat > "$BUILD_DIR/Dockerfile" <<'DOCKER'
 FROM ubuntu:22.04
 
-# Create non-root user early (uid/gid default ok)
+# Create non-root user
 RUN useradd -m -s /bin/bash ctfuser
 
 # Stage the root-only flag
 COPY flag.txt /root/flag.txt
 RUN chmod 600 /root/flag.txt
 
-# Put backup script in place
+# Put backup script in place and run it as root to generate the weak backup
 COPY app/backup.sh /usr/local/bin/backup.sh
-RUN chmod +x /usr/local/bin/backup.sh
-
-# Create backups dir, run backup as root with permissive umask (inside script)
-# Then make the directory "traversable but not listable" for non-owners.
-# 711 allows path traversal if you know the filename, but you can't list the dir.
-RUN mkdir -p /var/backups \
+RUN chmod +x /usr/local/bin/backup.sh \
+ && mkdir -p /var/backups \
  && /usr/local/bin/backup.sh \
+ # Hide directory listing but allow path traversal by known filename
  && chmod 711 /var/backups
 
 # Drop to non-root for players
