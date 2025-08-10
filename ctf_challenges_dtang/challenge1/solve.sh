@@ -6,9 +6,9 @@ IMAGE="dtang9/challenge1-brute-force-zip:latest"
 NAME="${NAME:-$(basename "${IMAGE%%:*}")}"
 
 # ---------- helpers ----------
-image_exists() { docker image inspect "$1" >/dev/null 2>&1; }
-container_exists() { docker ps -a --format '{{.Names}}' | grep -Fxq "$1"; }
-container_running() { docker ps --format '{{.Names}}' | grep -Fxq "$1"; }
+image_exists()      { docker image inspect "$1" >/dev/null 2>&1; }
+container_exists()  { docker ps -a --format '{{.Names}}' | grep -Fxq "$1"; }
+container_running() { docker ps    --format '{{.Names}}' | grep -Fxq "$1"; }
 
 exec_in() {
   # prefer bash, fallback to sh
@@ -29,7 +29,7 @@ fi
 STARTED_NEW=false
 echo "[*] Checking container state: $NAME"
 if container_exists "$NAME"; then
-  if container_running("$NAME"); then
+  if container_running "$NAME"; then
     echo "    Reusing running container."
   else
     echo "    Removing stopped container and starting fresh."
