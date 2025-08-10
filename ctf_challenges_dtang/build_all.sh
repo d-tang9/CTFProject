@@ -1,50 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# --- CONFIG ---
-DOCKER_USER="dtang9"                    # Your Docker Hub username
-IS_PRIVATE="${IS_PRIVATE:-false}"       # Set IS_PRIVATE=true to create private repos
-START="${START:-1}"                     # Optional: set START/END to limit which to build
+DOCKER_USER="dtang9"
+IS_PRIVATE="${IS_PRIVATE:-false}"
+START="${START:-1}"
 END="${END:-10}"
 
 here="$(cd "$(dirname "$0")" && pwd)"
 
-# --- REQUIREMENTS CHECK ---
-for bin in curl docker; do
-  command -v "$bin" >/dev/null || { echo "Missing required tool: $bin"; exit 1; }
-done
+need() { command -v "$1" >/dev/null || { echo "Missing required tool: $1"; exit 1; }; }
+need curl
+need docker
 
-# --- AUTH FOR DOCKER HUB API (uses Personal Access Token as password) ---
-# Provide via env var DOCKERHUB_TOKEN or get prompted once.
+# ---- Docker Hub API auth (PAT required if 2FA) ----
 if [[ -z "${DOCKERHUB_TOKEN:-}" ]]; then
-  read -r -s -p "Enter Docker Hub Personal Access Token for ${DOCKER_USER}: " DOCKERHUB_TOKEN
-  echo
+  echo "Set DOCKERHUB_TOKEN env var to your Docker Hub Personal Access Token."
+  exit 1
 fi
 
-# Get a short-lived JWT for API calls
+# Log in the docker CLI non-interactively so push has rights
+echo "${DOCKERHUB_TOKEN}" | docker login --username "${DOCKER_USER}" --password-stdin >/dev/null 2>&1 || {
+  echo "docker login failed for ${DOCKER_USER}. Check DOCKERHUB_TOKEN."
+  exit 1
+}
+
+# Verify CLI username
+cli_user="$(docker info 2>/dev/null | awk -F': ' '/Username/ {print $2}')"
+if [[ "${cli_user:-}" != "${DOCKER_USER}" ]]; then
+  echo "Logged in as '${cli_user:-none}', expected '${DOCKER_USER}'."
+  exit 1
+fi
+
+# Get JWT for Hub API
 HUB_JWT="$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
   -H 'Content-Type: application/json' \
   -d "{\"username\":\"${DOCKER_USER}\",\"password\":\"${DOCKERHUB_TOKEN}\"}" \
   | awk -F'"' '/"token":/ {print $4}')"
+[[ -n "${HUB_JWT}" ]] || { echo "Failed to get Docker Hub JWT."; exit 1; }
 
-if [[ -z "${HUB_JWT}" ]]; then
-  echo "Failed to get Docker Hub JWT. Check username/token (and 2FA requires a PAT)."
-  exit 1
-fi
-
-# --- OPTIONAL: verify docker CLI login matches username (for pushing) ---
-cli_user="$(docker info 2>/dev/null | awk -F': ' '/Username/ {print $2}')"
-if [[ "${cli_user:-}" != "${DOCKER_USER}" ]]; then
-  echo "Warning: docker CLI not logged in as ${DOCKER_USER} (current: ${cli_user:-none})."
-  echo "Run: docker login --username ${DOCKER_USER}   (use the same PAT if you have 2FA)"
-fi
-
-# --- HELPERS ---
 slugify() {
-  # lowercase, spaces->-, strip invalid chars for repo name
-  echo "$1" \
-    | tr '[:upper:]' '[:lower:]' \
-    | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//'
+  echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//'
 }
 
 repo_exists() {
@@ -57,36 +52,23 @@ repo_exists() {
 }
 
 ensure_repo() {
-  local repo="$1"
-  local desc="$2"
+  local repo="$1"; local desc="$2"
   if repo_exists "$repo"; then
     echo "Repo ${DOCKER_USER}/${repo} exists."
     return 0
   fi
   echo "Creating repo ${DOCKER_USER}/${repo} (private=${IS_PRIVATE})..."
-  local payload
-  payload="$(jq -cn --arg ns "$DOCKER_USER" --arg name "$repo" \
-                  --argjson priv "$( [[ "$IS_PRIVATE" == "true" ]] && echo true || echo false )" \
-                  --arg desc "$desc" \
-                  '{namespace:$ns,name:$name,is_private:$priv,description:$desc}')"
-  # If jq isn't installed, build JSON without jq as a fallback
-  if [[ -z "${payload}" ]]; then
-    payload="{\"namespace\":\"${DOCKER_USER}\",\"name\":\"${repo}\",\"is_private\":${IS_PRIVATE},\"description\":\"${desc}\"}"
-  fi
-
+  local payload="{\"namespace\":\"${DOCKER_USER}\",\"name\":\"${repo}\",\"is_private\":${IS_PRIVATE},\"description\":\"${desc}\"}"
   local code
   code="$(curl -s -o /dev/null -w '%{http_code}' \
     -X POST "https://hub.docker.com/v2/repositories/" \
     -H "Authorization: JWT ${HUB_JWT}" \
     -H "Content-Type: application/json" \
     -d "${payload}")"
-  if [[ "$code" != "201" ]]; then
-    echo "Failed to create repo (HTTP $code)."
-    exit 1
-  fi
+  [[ "$code" == "201" ]] || { echo "Failed to create repo (HTTP ${code})."; exit 1; }
 }
 
-# --- MAIN LOOP ---
+# --- Build, tag, push ---
 for d in $(seq "$START" "$END"); do
   challenge_dir="$here/challenge$d"
   [[ -d "$challenge_dir" ]] || { echo "Skip: ${challenge_dir} (missing)"; continue; }
@@ -94,27 +76,27 @@ for d in $(seq "$START" "$END"); do
   echo "== Building challenge $d =="
   (cd "$challenge_dir" && ./build.sh)
 
-  # Get human name from name.txt (required). Example: "Brute Force Zip"
-  if [[ -f "$challenge_dir/name.txt" ]]; then
-    chall_name_raw="$(sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$challenge_dir/name.txt")"
-  else
-    echo "Error: ${challenge_dir}/name.txt not found (put the challenge name there)."
-    exit 1
-  fi
-
+  # Challenge name comes from name.txt
+  [[ -f "$challenge_dir/name.txt" ]] || { echo "Missing ${challenge_dir}/name.txt"; exit 1; }
+  chall_name_raw="$(sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$challenge_dir/name.txt")"
   chall_name="$(slugify "$chall_name_raw")"
+
   repo_name="challenge${d}-${chall_name}"
   local_tag="challenge${d}:latest"
   hub_tag="${DOCKER_USER}/${repo_name}:latest"
 
-  # Make sure repo exists (create if not)
   ensure_repo "$repo_name" "CTF challenge ${d}: ${chall_name_raw}"
 
   echo "== Tagging image: ${local_tag} → ${hub_tag} =="
+  docker image inspect "${local_tag}" >/dev/null 2>&1 || { echo "Local image ${local_tag} not found"; exit 1; }
   docker tag "${local_tag}" "${hub_tag}"
 
   echo "== Pushing ${hub_tag} to Docker Hub =="
-  docker push "${hub_tag}"
+  if ! docker push "${hub_tag}"; then
+    echo "Push failed; refreshing login and retrying once..."
+    echo "${DOCKERHUB_TOKEN}" | docker login --username "${DOCKER_USER}" --password-stdin >/dev/null 2>&1
+    docker push "${hub_tag}"
+  fi
 done
 
 echo "All images built and pushed to Docker Hub."
