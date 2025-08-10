@@ -92,4 +92,4 @@ docker run -dit --name "${CONTAINER_NAME}" "${IMAGE_NAME}" >/dev/null
 
 echo "Built and started ${CONTAINER_NAME}. To play:"
 echo "  docker exec -it ${CONTAINER_NAME} /bin/bash"
-echo "Inside container, see: ~/checkpass and ~/README.txt"
+# echo "Inside container, see: ~/checkpass and ~/README.txt"
