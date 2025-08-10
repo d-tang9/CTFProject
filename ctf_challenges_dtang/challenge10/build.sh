@@ -38,18 +38,23 @@ cat > app/vuln.c <<'C'
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <limits.h>
 
 int main(void) {
-    // Minimal SUID "do something then log" demo.
-    // Calls 'logger' without a full path → PATH hijack.
-    int rc = system("logger -t vuln 'user ran vuln'");
-    if (rc == -1) {
-        perror("system");
-    } else if (rc != 0) {
-        fprintf(stderr, "logger exited with code %d\n", rc);
+    // Ensure we truly run as root (both real and effective)
+    if (setgid(0) != 0 || setuid(0) != 0) {
+        perror("setuid/setgid");
+        return 1;
     }
-    // Pretend to succeed regardless; this keeps the binary simple.
-    return 0;
+
+    // Use a shell that preserves privileges (-p) and do not hardcode full path to logger
+    // BusyBox sh supports -p; this avoids dropping euid.
+    int rc = execl("/bin/sh", "sh", "-pc",
+                   "logger -t vuln 'user ran vuln'", (char *)NULL);
+
+    // If execl returns, it's an error
+    perror("execl");
+    return rc == -1 ? 127 : rc;
 }
 C
 
