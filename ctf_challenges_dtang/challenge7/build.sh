@@ -72,4 +72,46 @@ cat > "${CHAL_NAME}/app/readflag.c" <<'EOF'
 int main(void) {
     FILE *f = fopen("/root/flag.txt", "r");
     if (!f) return 1;
-    int c; while ((c = fgetc(f)) != EOF) putchar(c
+    int c; while ((c = fgetc(f)) != EOF) putchar(c);
+    fclose(f);
+    return 0;
+}
+EOF
+
+cat > "${CHAL_NAME}/Dockerfile" <<'EOF'
+FROM alpine:3.20
+RUN apk add --no-cache bash coreutils build-base
+
+RUN addgroup -S ctf && adduser -S -G ctf -s /bin/bash ctfuser
+
+WORKDIR /opt
+COPY app/check_flag.sh /opt/check_flag.sh
+COPY app/flag.txt /root/flag.txt
+COPY app/README.txt /home/ctfuser/README.txt
+COPY app/ctfuser.bashrc /home/ctfuser/.bashrc
+COPY app/ctfuser.bash_profile /home/ctfuser/.bash_profile
+COPY app/readflag.c /usr/local/src/readflag.c
+
+RUN chmod 600 /root/flag.txt && chown root:root /root/flag.txt && \
+    chown ctfuser:ctf /home/ctfuser/README.txt /home/ctfuser/.bashrc /home/ctfuser/.bash_profile && \
+    chmod 755 /opt/check_flag.sh
+
+RUN gcc -O2 -s -o /usr/local/bin/readflag /usr/local/src/readflag.c && \
+    chown root:root /usr/local/bin/readflag && chmod 4755 /usr/local/bin/readflag && \
+    rm -rf /usr/local/src/*
+
+RUN sha256sum /opt/check_flag.sh | awk '{print $1}' > /opt/check_flag.sha256 && \
+    chown root:root /opt/check_flag.sha256 && chmod 444 /opt/check_flag.sha256
+
+RUN apk del build-base || true
+
+USER ctfuser
+WORKDIR /home/ctfuser
+CMD ["/bin/bash", "-l"]
+EOF
+
+docker build -t "${IMG_TAG}" "${CHAL_NAME}"
+docker rm -f "${CHAL_NAME}" >/dev/null 2>&1 || true
+docker run -d --name "${CHAL_NAME}" -it "${IMG_TAG}" >/dev/null
+
+echo "Built and started ${CHAL_NAME}. Attach with:  docker exec -it ${CHAL_NAME} /bin/bash"
