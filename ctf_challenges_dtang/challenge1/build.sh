@@ -56,7 +56,8 @@ dragon
 WL
 
 # Default shell so the container stays interactive for players
-CMD ["/bin/bash"]
+# CMD ["/bin/bash"]
+CMD ["sleep","infinity"]
 DOCKER
 
 # Build
