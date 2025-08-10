@@ -4,10 +4,10 @@ IMG="ctf_ch3_bashrc"
 cname="c3_run_$$"
 docker run -d --rm --name "$cname" "$IMG" >/dev/null
 
-# Trigger interactive shell so .bashrc runs
-docker exec -u ctfuser "$cname" bash -ic 'true' >/dev/null 2>&1 || true
+# Trigger a *login* shell; with .bash_profile present, it will source .bashrc
+docker exec -u ctfuser "$cname" bash -l -c 'true' >/dev/null 2>&1 || true
 
-# Brief retry loop
+# Brief retry loop in case the copy is slightly delayed
 out=""
 for i in {1..10}; do
   out="$(docker exec -u ctfuser "$cname" bash -lc 'cat /tmp/.cachefile' 2>/dev/null || true)"
