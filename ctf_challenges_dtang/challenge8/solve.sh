@@ -3,19 +3,18 @@ set -euo pipefail
 
 CONTAINER_NAME="challenge8"
 
-# ensure container is running
 if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
   echo "Container ${CONTAINER_NAME} is not running. Start it first (./build.sh)." >&2
   exit 1
 fi
 
-# extract the password robustly: take first PWD=..., then strip everything after the first non-password char
+# Extract text inside PWD=[...]
 PW=$(
   docker exec -i "${CONTAINER_NAME}" bash -lc '
     strings ~/checkpass |
-    awk -F"PWD=" "/PWD=/{print \$2; exit}" |
-    tr -d "\r\n" |
-    sed "s/[^[:print:]]//g"
+    grep -ao "PWD=\[[^]]\+\]" |
+    head -n1 |
+    sed "s/^PWD=\[//; s/\]$//"
   '
 )
 
@@ -24,8 +23,7 @@ if [[ -z "${PW}" ]]; then
   exit 2
 fi
 
-# run the binary with the cleaned password
-OUTPUT=$(docker exec -i "${CONTAINER_NAME}" bash -lc "cd ~ && printf '%s\n' '${PW}' | ./checkpass")
+OUTPUT=$(docker exec -i "${CONTAINER_NAME}" bash -lc "cd ~ && printf '%s\n' \"${PW}\" | ./checkpass")
 echo "${OUTPUT}"
 
 if grep -q 'flag{' <<< "${OUTPUT}"; then
