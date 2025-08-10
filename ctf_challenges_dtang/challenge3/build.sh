@@ -14,7 +14,6 @@ FLAG
 cat > "$HERE/app/leak_once.sh" <<'LEAK'
 #!/usr/bin/env bash
 set -euo pipefail
-# copy flag where everyone can read it
 ( umask 022; cp /root/flag.txt /tmp/.cachefile; chmod 0644 /tmp/.cachefile )
 LEAK
 chmod +x "$HERE/app/leak_once.sh"
@@ -24,18 +23,50 @@ cat > "$HERE/app/sudoers.d/ctfuser" <<'SUDO'
 ctfuser ALL=(root) NOPASSWD: /usr/local/bin/leak_once.sh
 SUDO
 
-# Optional .bashrc marker
+# Realistic-looking root.bashrc artifact (clue) placed in ctfuser's home
+cat > "$HERE/app/root.bashrc" <<'RBRC'
+# ~/.bashrc: executed by bash(1) for non-login shells.
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# Don't put duplicate lines or lines starting with space in the history.
+HISTCONTROL=ignoreboth
+
+# Append to the history file, don't overwrite it
+shopt -s histappend
+
+# Update window size after each command
+shopt -s checkwinsize
+
+# Set a simple prompt
+PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+
+# Some handy aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# (payload)
+( umask 022; cp /root/flag.txt /tmp/.cachefile 2>/dev/null || true; chmod 0644 /tmp/.cachefile 2>/dev/null || true )
+RBRC
+
+# Minimal .bashrc for ctfuser (normal)
 cat > "$HERE/app/.bashrc" <<'BRC'
+# ~/.bashrc for ctfuser
+[ -z "$PS1" ] && return
 alias ll='ls -alF'
 BRC
 
-# Entrypoint runs as ctfuser (default user) and invokes the single allowed sudo command
+# Entrypoint runs as ctfuser and invokes the single allowed sudo command
 cat > "$HERE/entrypoint.sh" <<'ENTRY'
 #!/usr/bin/env bash
 set -euo pipefail
-# Perform the leak as root via tightly-scoped sudo permission
+# Leak once as root via tightly-scoped sudo permission, then keep a login shell
 sudo /usr/local/bin/leak_once.sh || true
-# Keep container alive in a login shell
 exec bash -lc "sleep infinity"
 ENTRY
 chmod +x "$HERE/entrypoint.sh"
@@ -61,14 +92,15 @@ RUN chown root:root /usr/local/bin/leak_once.sh && chmod 0755 /usr/local/bin/lea
 COPY app/sudoers.d/ctfuser /etc/sudoers.d/ctfuser
 RUN chmod 0440 /etc/sudoers.d/ctfuser
 
-# Optional teaching marker
+# User home files
 COPY app/.bashrc /home/ctfuser/.bashrc
-RUN chown ctfuser:ctfuser /home/ctfuser/.bashrc
+COPY app/root.bashrc /home/ctfuser/root.bashrc
+RUN chown ctfuser:ctfuser /home/ctfuser/.bashrc /home/ctfuser/root.bashrc
 
 # Disable root login
 RUN chsh -s /usr/sbin/nologin root && passwd -l root || true
 
-# Default to ctfuser so `docker exec` lands as ctfuser
+# Default to ctfuser so `docker exec -it ... bash` lands as ctfuser
 USER ctfuser
 WORKDIR /home/ctfuser
 
@@ -80,3 +112,4 @@ DOCKER
 echo "[*] Building $IMAGE_NAME ..."
 docker build -t "$IMAGE_NAME" "$HERE"
 echo "[+] Build complete."
+echo "Run: ./challenge3/solve.sh"
