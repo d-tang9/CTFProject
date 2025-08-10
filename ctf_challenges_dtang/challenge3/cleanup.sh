@@ -1,17 +1,10 @@
 #!/bin/bash
-set -euo pipefail
+set -e
 
-IMAGE_TAG="ctf-ch3:bashrc-backdoor"
-CONTAINER_NAME="challenge3"
-BUILD_DIR="$(dirname "$0")/.build"
+IMAGE="challenge3"
+CONTAINER="challenge3"
 
-echo "[*] Stopping and removing container (if present)..."
-docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
-
-echo "[*] Removing image ${IMAGE_TAG} (if present)..."
-docker rmi "$IMAGE_TAG" >/dev/null 2>&1 || true
-
-echo "[*] Cleaning local build artifacts..."
-rm -rf "$BUILD_DIR"
-
+echo "[*] Removing container and image..."
+docker rm -f $CONTAINER >/dev/null 2>&1 || true
+docker rmi $IMAGE >/dev/null 2>&1 || true
 echo "[+] Cleaned Challenge 3."
