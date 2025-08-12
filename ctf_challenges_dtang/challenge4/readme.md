@@ -1,7 +1,7 @@
 # Broken Backup Permissions (Challenge 4)
 
 ## Description
-A root backup script copies `/root/flag.txt` to `/var/backups/flag_backup.txt` with world‑readable permissions. The backups directory is locked from listing, but if you know the filename you can still read the leaked copy. Your goal is to find the script, understand the weakness, and read the flag from the backup.
+Find the backup script. The backups directory is locked from listing, but if you know the filename you can still read the leaked copy. Your goal is to find the script, understand the weakness, and read the flag from the backup.
 
 # Solution
 Step by step manual solution (player’s perspective):
