@@ -87,7 +87,3 @@ These steps describe how to rebuild the challenge at a high level (no `build.sh`
    - Copy `/usr/local/bin/vuln` from builder.
    - Set owner to root and permissions to `4755` to enable SUID.
    - Set default user to `ctfuser`, workdir to `/home/ctfuser`, and keep the container alive with a simple Bash loop.
-
-5. Design note (logical flaw and fix).
-   - **Flaw found:** Using `system("logger ...")` on Alpine routes through `/bin/sh`, which may drop privileges, causing the fake `logger` to run as a normal user.
-   - **Fix applied:** Use `setuid(0)/setgid(0)` and `execvp("logger", argv)` to call `logger` directly so the effective UID remains root while still relying on `PATH`. This preserves the intended vulnerability and keeps the challenge reliable across environments.
