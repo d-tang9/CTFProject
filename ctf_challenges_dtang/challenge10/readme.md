@@ -1,7 +1,7 @@
 # Challenge 10 — SUID PATH Hijack
 
 ## Description
-Exploit a SUID root program that calls `logger` without a full path. By putting a fake `logger` earlier in `PATH`, the program runs your script as root and reveals the flag.
+Exploit a SUID root program that calls `logger` without a full path. 
 
 # Solution
 Follow these steps inside the running container as user `ctfuser`.
