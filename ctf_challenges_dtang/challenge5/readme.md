@@ -1,7 +1,7 @@
 # Misconfigured Sudoers (Challenge 5)
 
 ## Description
-A misconfigured sudoers rule allows the user to run `/usr/bin/less` as root without a password. This can be exploited to gain a root shell and read the flag.
+A misconfigured sudoers rule allows the user to run as root without a password. This can be exploited to gain a root shell and read the flag.
 
 # Solution
 1. Connect to the container:
