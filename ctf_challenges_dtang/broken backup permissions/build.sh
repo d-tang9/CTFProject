@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Config
-IMAGE_NAME="challenge4"
+IMAGE_NAME="ctf-broken-backup-permissions"
 TAG="latest"
 BUILD_DIR="$(pwd)/challenge4"
 APP_DIR="$BUILD_DIR/app"
