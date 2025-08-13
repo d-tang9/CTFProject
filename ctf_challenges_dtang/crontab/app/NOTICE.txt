@@ -1,0 +1,4 @@
+[ System Maintenance Notice ]
+A root cron task runs /usr/local/bin/cleanup.sh every minute to process scripts
+dropped into /var/cleanup/. If you put an executable there, it should get picked
+up automatically. Logs: /var/log/cleanup.log

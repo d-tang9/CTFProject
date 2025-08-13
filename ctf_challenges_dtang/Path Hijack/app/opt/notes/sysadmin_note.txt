@@ -1,0 +1,2 @@
+Reminder: Hardcode full paths for any privileged tool that calls other programs.
+Example: use /usr/bin/logger instead of logger. Also keep PATH safe.

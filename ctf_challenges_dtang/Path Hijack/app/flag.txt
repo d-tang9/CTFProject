@@ -1,0 +1,1 @@
+flag{suid_path_hijack_works}

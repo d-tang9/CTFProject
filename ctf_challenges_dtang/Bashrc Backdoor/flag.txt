@@ -1,0 +1,1 @@
+FLAG{bashrc_backdoor_leaked_flag}

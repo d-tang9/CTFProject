@@ -1,0 +1,1 @@
+ctfuser ALL=(root) NOPASSWD: /usr/local/bin/leak_once.sh
