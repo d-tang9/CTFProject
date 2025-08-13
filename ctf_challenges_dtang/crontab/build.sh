@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="challenge9:latest"
-CONTAINER="challenge9"
+IMAGE="ctf-crontab:latest"
+CONTAINER="ctf-crontab"
 
 have_image() { docker image inspect "$IMAGE" >/dev/null 2>&1; }
 have_container() { docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER}$"; }
