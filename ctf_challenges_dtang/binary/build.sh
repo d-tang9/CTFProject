@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CHALLENGE_NAME="challenge8"
+CHALLENGE_NAME="ctf-binary"
 IMAGE_NAME="${CHALLENGE_NAME}:latest"
 CONTAINER_NAME="${CHALLENGE_NAME}"
 
