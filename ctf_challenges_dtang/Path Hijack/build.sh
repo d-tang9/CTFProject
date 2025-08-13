@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="challenge10:latest"
-CONTAINER="challenge10"
+IMAGE="ctf-path-hijack:latest"
+CONTAINER="ctf-path-hijack"
 
 # Fresh workspace
 rm -rf app
