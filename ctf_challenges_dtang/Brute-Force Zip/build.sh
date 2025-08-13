@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="challenge1:latest"
+IMAGE="ctf-brute-force-zip:latest"
 CTX="$(cd "$(dirname "$0")" && pwd)/build_ctx"
 
 # Fresh context
