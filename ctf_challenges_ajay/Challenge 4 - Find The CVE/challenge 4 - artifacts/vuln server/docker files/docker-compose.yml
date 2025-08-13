@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  multi-service:
+    build: .
+    ports:
+      - "21:21"     # FTP
+      - "22:22"     # SSH
+      - "25:25"     # SMTP
+      - "533:53"     # DNS
+      - "80:80"     # HTTP
+      - "110:110"   # POP3
+    volumes:
+      - ./configs:/configs
+    tty: true
