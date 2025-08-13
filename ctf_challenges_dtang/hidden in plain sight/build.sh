@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CHALLENGE_NAME="challenge6"
-IMAGE_NAME="challenge6:latest"
-CONTAINER_NAME="challenge6"
+CHALLENGE_NAME="ctf-hidden-in-plain-sight"
+IMAGE_NAME="ctf-hidden-in-plain-sight:latest"
+CONTAINER_NAME="ctf-hidden-in-plain-sight"
 
 # Clean old artifacts quietly
 docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
