@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Challenge 5: Misconfigured Sudoers (less NOPASSWD)
 # Image/tag and container names
-IMAGE="challenge5:latest"
-CONTAINER="challenge5"
+IMAGE="ctf-sudoers:latest"
+CONTAINER="ctf-sudoers"
 
 # Clean any dangling previous container (best-effort)
 if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER"; then
