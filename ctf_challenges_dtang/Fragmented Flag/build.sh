@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="challenge2-fragments:latest"
+IMAGE="ctf-fragmented-flag:latest"
 CTX="$(cd "$(dirname "$0")" && pwd)"/build_ctx
 
 # Fresh context
