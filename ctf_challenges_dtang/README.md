@@ -1,8 +1,5 @@
-# CTF Challenges 1–10 (Merged, Auto-Rebuild + Auto-Solve)
-
 This repo contains 10 challenges, each with a reproducible `build.sh`, a containerized environment,
-and a `solve.sh` that validates the expected flag. A global `docker-compose.yml` is included so your team
-can start all challenge containers at once (for interactive exploration).
+and a `solve.sh` that validates the expected flag.
 
 ## Requirements
 - Docker 24+
@@ -18,6 +15,5 @@ docker compose up -d  # (optional) starts one container per challenge
 ```
 
 ## Layout
-- `challengeN/` — one folder per challenge with `build.sh`, `solve.sh`, `cleanup.sh`.
-- `docker-compose.yml` — convenience to keep all containers running for demos.
-- `build_all.sh`, `solve_all.sh`, `validate_all.sh` — orchestration helpers.
+- `challenge name` — one folder per challenge with `build.sh`, `solve.sh`, `cleanup.sh`.
+- `build_all.sh`, `solve_all.sh`, `validate_all.sh` — helper scripts.
