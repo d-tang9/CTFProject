@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-CHAL_NAME="challenge7"
+CHAL_NAME="ctf-time-manipulation"
 IMG_TAG="${CHAL_NAME}"
 
 rm -rf "${CHAL_NAME}"
