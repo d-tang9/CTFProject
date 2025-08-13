@@ -1,0 +1,16 @@
+services:
+  web:
+    image: wumbology/opencart-web:ctf-baked
+    ports:
+      - "8086:80"
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: wumbology/opencart-db:withdata
+    container_name: opencart-db
+    restart: always
+
+volumes:
+  db_data:

@@ -1,0 +1,7 @@
+services:
+  web:
+    image: wumbology/andrewpaul:latest
+    container_name: andrewpaul
+    ports:
+      - "8123:80"
+    restart: unless-stopped

@@ -1,0 +1,7 @@
+services:
+  web:
+    image: wumbology/tomandjerry:latest
+    container_name: tomandjerry
+    ports:
+      - "8010:8080"
+    restart: unless-stopped
