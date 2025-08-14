@@ -1,0 +1,7 @@
+services:
+  web:
+    image: wumbology/struts:latest
+    container_name: struts
+    ports:
+      - "8011:8080"
+    restart: unless-stopped

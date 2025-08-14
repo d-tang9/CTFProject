@@ -1,0 +1,7 @@
+services:
+  web:
+    image: wumbology/phpthink:latest
+    container_name: thinkphp
+    ports:
+      - "8484:80"
+    restart: unless-stopped

@@ -1,0 +1,7 @@
+services:
+  web:
+    image: wumbology/phpunit:updated
+    container_name: phpunit
+    ports:
+      - "8050:80"
+    restart: unless-stopped

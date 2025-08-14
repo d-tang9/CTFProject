@@ -1,0 +1,25 @@
+services:
+  wordpress:
+    image: wumbology/wordpress:spr
+    ports:
+      - "8081:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WORDPRESS_DB_NAME: wpdb
+    depends_on:
+      - db
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: always
+
+  db:
+    image: wumbology/wpdb:preloaded
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+volumes:
+  wordpress_data:
+  db_data:

@@ -1,0 +1,7 @@
+services:
+  web:
+    image: wumbology/vuln-rce:latest
+    container_name: exploitme
+    ports:
+      - "8044:80"
+    restart: unless-stopped
