@@ -9,8 +9,8 @@ and a `solve.sh` that validates the expected flag.
 ## Quick start (everything)
 ```bash
 ./build_all.sh        # builds all images
-docker compose up -d  # (optional) starts one container per challenge
-./solve_all.sh        # runs all solvers (they work with or without compose)
+./ctf-helper.sh       # 
+./solve_all.sh        # runs all solvers
 ./validate_all.sh     # build + solve in one step
 ```
 
