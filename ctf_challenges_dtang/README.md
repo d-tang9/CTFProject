@@ -9,11 +9,11 @@ and a `solve.sh` that validates the expected flag.
 ## Quick start (everything)
 ```bash
 ./build_all.sh        # builds all images
-./ctf-helper.sh       # 
+./ctf-helper.sh       # Script to assist users with running the challenge
 ./solve_all.sh        # runs all solvers
 ./validate_all.sh     # build + solve in one step
 ```
 
 ## Layout
 - `challenge name` — one folder per challenge with `build.sh`, `solve.sh`, `cleanup.sh`.
-- `build_all.sh`, `solve_all.sh`, `validate_all.sh` — helper scripts.
+- `build_all.sh`, `solve_all.sh`, `validate_all.sh`, `ctf-helper.sh` — helper scripts.
