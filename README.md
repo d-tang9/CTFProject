@@ -1,5 +1,6 @@
 Each folder contains their own individual readme files.
 
+
 # CTF Project Group 9
 ## Contact Information
 The following are the members of Group 9 for SPR888. 
@@ -22,7 +23,7 @@ The `Participants Challenges` folder contains a set of challenges using Docker w
 Finally, the `CTFd` folder contains a configured CTFd instance with all the challenges pre-loaded and all configuration made. 
 
 # CTFd - CTF Platfrom 
-The CTFd repository is found in the `ctfdfinal` folder and it contains an already configured CTFd instances with all the challenges and configurations pre-loaded for anyone to host this CTF project. This project is based on the popular CTF platform, CTFd:
+The CTFd repository is found in the `spr888-ctfd-main` folder and it contains an already configured CTFd instances with all the challenges and configurations pre-loaded for anyone to host this CTF project. This project is based on the popular CTF platform, CTFd:
 - https://ctfd.io/
 - https://github.com/CTFd/CTFd 
 
@@ -33,7 +34,7 @@ To host this CTF project, Docker engine and Docker Compose are required. Follow 
   - https://docs.docker.com/compose/install/linux/#install-using-the-repository
 
 To host a CTF for about 20 participants the following are the bare minimum recommended specs for such a virtual machine:
-  -   **vCPU**: 2 cores
+-   **vCPU**: 2 cores
 -   **RAM**: 4 GB
 -   **Storage**: 60 GB SSD Minimum  
 -   **Network**: 1 Gbps shared (IP address should be accessible to all participants)
@@ -42,7 +43,7 @@ To host a CTF for about 20 participants the following are the bare minimum recom
 Ensure the network is configured to allow multiple systems to reliably access the virtual machine simultaneously via it's IP address. 
 
 **Step 1. Configure a virtual machine**
-The first step to launch the configured CTFd instance is to copy the `ctfdfinal` directory to a virtual machine intended to host this CTF web platform. 
+The first step to launch the configured CTFd instance is to copy the `spr888-ctfd-main` directory to a virtual machine intended to host this CTF web platform. 
 
 Ensure that no other web applications or services are operating on port `8000` on this virtual machine. 
 
@@ -57,12 +58,11 @@ Within the `ctfdfinal` directory, execute the following command to launch this p
 
 After the above steps are complete CTFd should be accessible through your local IP address. In a browser visit the following site:
 
-
     https://<vm-ip-address>:8000
 
 At the login page use the following credentials to access the admin account:
-``Username: ``
-``Password:``
+``Username: PentestCourseAdmin ``
+``Password: Thisisasecurepassword``
 
 The following is the credentials for the test user account:
 ``Username: participant1``
@@ -73,3 +73,8 @@ https://docs.ctfd.io/tutorials/users/adding-new-users/
 
 **Step 4. Provide participants with Access**
 The last step is providing students with the URL of the CTFd instance for them to be able to access and participate. Student's can either access the platform with pre-configured accounts or may be allowed to register their own accounts as is up to the event host. 
+
+
+
+
+
